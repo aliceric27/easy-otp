@@ -7,6 +7,7 @@ import tkinter as tk
 from typing import Optional, Callable
 from src.ui.themes.theme import theme
 from src.ui.components.circular_progress import CircularProgress
+from src.utils.i18n import t, add_language_observer, remove_language_observer
 
 
 class OTPCard(ctk.CTkFrame):
@@ -57,6 +58,10 @@ class OTPCard(ctk.CTkFrame):
         
         # 更新顯示
         self.update_display()
+        
+        # 註冊語言變更觀察者（儲存參考以便清理）
+        self._language_observer = self._on_language_changed
+        add_language_observer(self._language_observer)
     
     def _create_widgets(self):
         """創建組件"""
@@ -128,7 +133,7 @@ class OTPCard(ctk.CTkFrame):
             button_style = theme.get_button_style("secondary")
             self.edit_btn = ctk.CTkButton(
                 button_frame,
-                text="編輯",
+                text=t("common.edit"),
                 width=50,
                 height=30,
                 font=(theme.fonts.family_primary, theme.fonts.size_small),
@@ -142,7 +147,7 @@ class OTPCard(ctk.CTkFrame):
             button_style = theme.get_button_style("secondary")
             self.delete_btn = ctk.CTkButton(
                 button_frame,
-                text="刪除",
+                text=t("common.delete"),
                 width=50,
                 height=30,
                 font=(theme.fonts.family_primary, theme.fonts.size_small),
@@ -181,8 +186,8 @@ class OTPCard(ctk.CTkFrame):
         """處理刪除事件"""
         # 顯示確認對話框
         result = tk.messagebox.askyesno(
-            "確認刪除",
-            f"確定要刪除 '{self.label}' 嗎？\n此操作無法撤銷。",
+            t("dialog.delete_otp.title"),
+            t("dialog.delete_otp.message", label=self.label),
             parent=self
         )
         
@@ -197,7 +202,7 @@ class OTPCard(ctk.CTkFrame):
         
         self.copy_tooltip = ctk.CTkLabel(
             self,
-            text="✓ 已複製",
+            text=t("common.copied_mark"),
             fg_color=theme.colors.success,
             corner_radius=theme.styles.radius_small,
             text_color=theme.colors.text_primary,
@@ -267,6 +272,10 @@ class OTPCard(ctk.CTkFrame):
     
     def destroy(self):
         """銷毀組件"""
+        # 移除語言觀察者以防止記憶體洩漏
+        if hasattr(self, '_language_observer'):
+            remove_language_observer(self._language_observer)
+        
         # 清理提示標籤
         if self.copy_tooltip:
             self.copy_tooltip.destroy()

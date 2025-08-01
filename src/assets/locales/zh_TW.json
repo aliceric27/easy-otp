@@ -1,0 +1,166 @@
+{
+  "app": {
+    "title": "Easy OTP",
+    "version": "版本 2.1.0",
+    "description": "現代化的 OTP 管理器"
+  },
+  "common": {
+    "ok": "確定",
+    "cancel": "取消",
+    "close": "關閉",
+    "edit": "編輯",
+    "delete": "刪除",
+    "confirm": "確認",
+    "yes": "是",
+    "no": "否",
+    "save": "儲存",
+    "load": "載入",
+    "import": "導入",
+    "export": "導出",
+    "add": "新增",
+    "remove": "移除",
+    "search": "搜尋",
+    "search_colon": "搜尋:",
+    "clear": "清除",
+    "copy": "複製",
+    "copied": "已複製",
+    "copied_mark": "✓ 已複製",
+    "error": "錯誤",
+    "warning": "警告",
+    "info": "提示",
+    "success": "成功"
+  },
+  "menu": {
+    "add": {
+      "title": "+ 新增",
+      "upload_qr": "上傳 QR Code",
+      "manual_input": "手動輸入",
+      "batch_import": "批量導入"
+    },
+    "more": {
+      "title": "...",
+      "export_all": "導出全部",
+      "backup": "備份",
+      "settings": "設定",
+      "about": "關於"
+    },
+    "language": {
+      "title": "語言",
+      "zh_TW": "繁體中文",
+      "en_US": "English",
+      "display": {
+        "zh_TW": "中",
+        "en_US": "EN"
+      }
+    }
+  },
+  "search": {
+    "placeholder": "搜尋 OTP...",
+    "no_results": "找不到符合的 OTP",
+    "no_results_desc": "沒有找到包含「{query}」的條目"
+  },
+  "empty_state": {
+    "no_otp": {
+      "title": "還沒有任何 OTP",
+      "description": "點擊上方「新增」按鈕開始",
+      "action": "上傳 QR Code"
+    }
+  },
+  "dialog": {
+    "add_otp": {
+      "title": "手動新增 OTP",
+      "label": "標籤名稱:",
+      "secret": "密鑰:",
+      "issuer": "發行者 (可選):",
+      "validation": {
+        "required": "請填寫標籤和密鑰",
+        "invalid_secret": "新增失敗，請檢查密鑰是否有效"
+      }
+    },
+    "edit_otp": {
+      "title": "編輯 OTP",
+      "label": "標籤名稱:",
+      "secret": "密鑰:",
+      "issuer": "發行者 (可選):",
+      "validation": {
+        "required": "請填寫標籤和密鑰",
+        "update_failed": "更新失敗"
+      }
+    },
+    "delete_otp": {
+      "title": "確認刪除",
+      "message": "確定要刪除 '{label}' 嗎？\n此操作無法撤銷。"
+    },
+    "batch_import": {
+      "title": "批量導入",
+      "choose_method": "選擇導入方式:",
+      "from_json": "從 JSON 檔案導入",
+      "from_qr_dir": "從 QR Code 目錄導入",
+      "no_new_items": "沒有新的 OTP 可導入"
+    },
+    "export": {
+      "title": "導出 OTP",
+      "choose_format": "選擇導出格式:",
+      "json": "導出為 JSON",
+      "qr": "導出為 QR Code",
+      "csv": "導出為 CSV",
+      "no_items": "沒有可導出的 OTP"
+    },
+    "backup": {
+      "title": "創建備份",
+      "name_prompt": "輸入備份名稱（可選）:",
+      "success": "備份創建成功！\n是否開啟備份目錄？",
+      "failed": "備份創建失敗",
+      "no_items": "沒有可備份的 OTP"
+    },
+    "about": {
+      "title": "關於 Easy OTP"
+    }
+  },
+  "file_dialog": {
+    "select_qr": "選擇 QR Code 圖片",
+    "select_json": "選擇 JSON 檔案",
+    "select_qr_dir": "選擇包含 QR Code 的目錄",
+    "save_json": "儲存 JSON 檔案",
+    "save_csv": "儲存 CSV 檔案",
+    "select_export_dir": "選擇導出目錄",
+    "file_types": {
+      "images": "圖片檔案",
+      "json": "JSON 檔案",
+      "csv": "CSV 檔案",
+      "all": "所有檔案"
+    }
+  },
+  "status": {
+    "imported": "成功導入 {count} 個 OTP",
+    "added": "已新增 {label}",
+    "updated": "已更新 {label}",
+    "deleted": "已刪除 {label}",
+    "copied": "已複製 {code}",
+    "exported_json": "成功導出為 JSON",
+    "exported_csv": "成功導出為 CSV",
+    "exported_qr": "成功導出 {count} 個 QR Code",
+    "backup_created": "備份創建成功",
+    "language_changed": "語言已切換為 {language}",
+    "import_from_file": "從 {filename} 導入 {count} 個 OTP",
+    "import_from_dir": "從 {file_count} 個檔案成功導入 {total} 個 OTP",
+    "no_qr_found": "未找到任何 QR Code"
+  },
+  "error": {
+    "qr_read_failed": "無法從圖片中讀取 OTP 資訊",
+    "json_read_failed": "無法讀取 JSON 檔案",
+    "export_failed": "導出失敗",
+    "save_failed": "儲存失敗",
+    "load_failed": "載入失敗"
+  },
+  "count": {
+    "total": "共 {count} 個",
+    "showing": "顯示 {shown} / {total} 個"
+  },
+  "tooltip": {
+    "copy_otp": "點擊複製 OTP 代碼",
+    "edit_otp": "編輯此 OTP",
+    "delete_otp": "刪除此 OTP",
+    "language_switch": "切換語言"
+  }
+}

@@ -13,7 +13,9 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.core import OTPManager, OTPEntry, StorageManager
+from src.core.settings import settings
 from src.utils import QRHandler, ExportImportManager
+from src.utils.i18n import i18n, t, add_language_observer, remove_language_observer
 from src.ui.themes import theme
 from src.ui.components import OTPCard, SearchBar, EmptyState
 
@@ -24,9 +26,15 @@ class MainWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
         
+        # 載入設定
+        self._load_settings()
+        
         # 設定視窗
-        self.title("Easy OTP")
-        self.geometry("450x700")
+        self.title(t("app.title"))
+        window_settings = settings.get_window_settings()
+        self.geometry(f"{window_settings['width']}x{window_settings['height']}")
+        if window_settings['x'] and window_settings['y']:
+            self.geometry(f"+{window_settings['x']}+{window_settings['y']}")
         self.minsize(400, 600)
         
         # 設定主題
@@ -63,8 +71,8 @@ class MainWindow(ctk.CTk):
         # 綁定關閉事件
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
         
-        # 設定拖放
-        self._setup_drag_drop()
+        # 註冊語言變更觀察者
+        add_language_observer(self._on_language_changed)
     
     def _create_widgets(self):
         """創建組件"""
@@ -74,7 +82,7 @@ class MainWindow(ctk.CTk):
         # 搜尋框
         self.search_bar = SearchBar(
             self,
-            placeholder="搜尋 OTP...",
+            placeholder=t("search.placeholder"),
             on_search=self._on_search
         )
         self.search_bar.pack(fill="x", padx=theme.styles.padding_medium, 
@@ -98,21 +106,31 @@ class MainWindow(ctk.CTk):
                             pady=theme.styles.padding_small)
         
         # 標題
-        title_label = ctk.CTkLabel(
+        self.title_label = ctk.CTkLabel(
             toolbar_content,
-            text="Easy OTP",
+            text=t("app.title"),
             font=(theme.fonts.family_primary, theme.fonts.size_large, theme.fonts.weight_bold)
         )
-        title_label.pack(side="left")
+        self.title_label.pack(side="left")
         
         # 右側按鈕
         button_frame = ctk.CTkFrame(toolbar_content, fg_color="transparent")
         button_frame.pack(side="right")
         
+        # 語言切換按鈕
+        self.lang_btn = ctk.CTkButton(
+            button_frame,
+            text=self._get_language_display_text(),
+            width=60,
+            command=self._show_language_menu,
+            **theme.get_button_style("secondary")
+        )
+        self.lang_btn.pack(side="left", padx=(0, theme.styles.margin_small))
+        
         # 新增按鈕（下拉選單）
         self.add_btn = ctk.CTkButton(
             button_frame,
-            text="+ 新增",
+            text=t("menu.add.title"),
             width=80,
             command=self._show_add_menu,
             **theme.get_button_style("primary")
@@ -122,7 +140,7 @@ class MainWindow(ctk.CTk):
         # 更多選項按鈕
         self.more_btn = ctk.CTkButton(
             button_frame,
-            text="...",
+            text=t("menu.more.title"),
             width=40,
             command=self._show_more_menu,
             **theme.get_button_style("secondary")
@@ -147,10 +165,10 @@ class MainWindow(ctk.CTk):
         # 空狀態
         self.empty_state = EmptyState(
             self.otp_list_frame,
-            title="還沒有任何 OTP",
-            description="點擊上方「新增」按鈕開始",
+            title=t("empty_state.no_otp.title"),
+            description=t("empty_state.no_otp.description"),
             icon="🔐",
-            action_text="上傳 QR Code",
+            action_text=t("empty_state.no_otp.action"),
             on_action=self._upload_qr_code
         )
     
@@ -180,16 +198,116 @@ class MainWindow(ctk.CTk):
         
         self._update_count_label()
     
+    def _load_settings(self):
+        """載入設定"""
+        # 設定語言
+        saved_language = settings.get_language()
+        i18n.set_language(saved_language)
+    
+    def _save_settings(self):
+        """儲存設定"""
+        # 儲存視窗大小和位置
+        try:
+            width = self.winfo_width()
+            height = self.winfo_height()
+            x = self.winfo_x()
+            y = self.winfo_y()
+            settings.set_window_settings(width, height, x, y)
+        except:
+            pass  # 如果無法取得視窗資訊，忽略
+        
+        # 儲存語言
+        settings.set_language(i18n.get_current_language())
+    
+    def _get_language_display_text(self) -> str:
+        """取得語言顯示文字"""
+        current_lang = i18n.get_current_language()
+        # 嘗試從翻譯檔案取得顯示文字
+        display_key = f"menu.language.display.{current_lang}"
+        display_text = t(display_key)
+        # 如果找不到對應的顯示文字，使用預設邏輯
+        if display_text == display_key:
+            return current_lang[:2].upper()
+        return display_text
+    
+    def _on_language_changed(self, old_language: str):
+        """語言變更時的回調"""
+        # 更新所有 UI 文字
+        self._update_ui_texts()
+        
+        # 顯示狀態訊息
+        current_lang_name = i18n.get_language_name(i18n.get_current_language())
+        self._show_status(t("status.language_changed", language=current_lang_name))
+    
+    def _update_ui_texts(self):
+        """更新所有 UI 文字"""
+        # 更新標題
+        self.title(t("app.title"))
+        self.title_label.configure(text=t("app.title"))
+        
+        # 更新按鈕
+        self.lang_btn.configure(text=self._get_language_display_text())
+        self.add_btn.configure(text=t("menu.add.title"))
+        self.more_btn.configure(text=t("menu.more.title"))
+        
+        # 更新搜尋框
+        self.search_bar.update_placeholder(t("search.placeholder"))
+        
+        # 更新空狀態
+        self.empty_state.update_content(
+            title=t("empty_state.no_otp.title"),
+            description=t("empty_state.no_otp.description"),
+            action_text=t("empty_state.no_otp.action")
+        )
+        
+        # 更新計數標籤
+        self._update_count_label()
+        
+        # 重新刷新列表（以更新搜尋結果文字）
+        if self.search_query:
+            self._refresh_otp_list()
+    
+    def _show_language_menu(self):
+        """顯示語言選單"""
+        # 創建選單
+        menu = tk.Menu(self, tearoff=0, bg=theme.colors.bg_secondary,
+                      fg=theme.colors.text_primary, activebackground=theme.colors.bg_hover)
+        
+        # 取得可用語言
+        available_languages = i18n.get_available_languages()
+        current_language = i18n.get_current_language()
+        
+        for lang_code in available_languages:
+            lang_name = i18n.get_language_name(lang_code)
+            # 為當前語言加上標記
+            display_name = f"✓ {lang_name}" if lang_code == current_language else lang_name
+            menu.add_command(
+                label=display_name,
+                command=lambda code=lang_code: self._change_language(code)
+            )
+        
+        # 顯示選單
+        menu.tk_popup(
+            self.lang_btn.winfo_rootx(),
+            self.lang_btn.winfo_rooty() + self.lang_btn.winfo_height()
+        )
+    
+    def _change_language(self, language_code: str):
+        """切換語言"""
+        if i18n.set_language(language_code):
+            # 儲存設定
+            settings.set_language(language_code)
+    
     def _show_add_menu(self):
         """顯示新增選單"""
         # 創建選單
         menu = tk.Menu(self, tearoff=0, bg=theme.colors.bg_secondary,
                       fg=theme.colors.text_primary, activebackground=theme.colors.bg_hover)
         
-        menu.add_command(label="上傳 QR Code", command=self._upload_qr_code)
-        menu.add_command(label="手動輸入", command=self._manual_input)
+        menu.add_command(label=t("menu.add.upload_qr"), command=self._upload_qr_code)
+        menu.add_command(label=t("menu.add.manual_input"), command=self._manual_input)
         menu.add_separator()
-        menu.add_command(label="批量導入", command=self._batch_import)
+        menu.add_command(label=t("menu.add.batch_import"), command=self._batch_import)
         
         # 顯示選單
         menu.tk_popup(
@@ -203,10 +321,10 @@ class MainWindow(ctk.CTk):
         menu = tk.Menu(self, tearoff=0, bg=theme.colors.bg_secondary,
                       fg=theme.colors.text_primary, activebackground=theme.colors.bg_hover)
         
-        menu.add_command(label="導出全部", command=self._export_all)
-        menu.add_command(label="備份", command=self._create_backup)
+        menu.add_command(label=t("menu.more.export_all"), command=self._export_all)
+        menu.add_command(label=t("menu.more.backup"), command=self._create_backup)
         menu.add_separator()
-        menu.add_command(label="關於", command=self._show_about)
+        menu.add_command(label=t("menu.more.about"), command=self._show_about)
         
         # 顯示選單
         menu.tk_popup(
@@ -217,10 +335,10 @@ class MainWindow(ctk.CTk):
     def _upload_qr_code(self):
         """上傳 QR Code"""
         file_path = filedialog.askopenfilename(
-            title="選擇 QR Code 圖片",
+            title=t("file_dialog.select_qr"),
             filetypes=[
-                ("圖片檔案", "*.png *.jpg *.jpeg *.bmp *.gif"),
-                ("所有檔案", "*.*")
+                (t("file_dialog.file_types.images"), "*.png *.jpg *.jpeg *.bmp *.gif"),
+                (t("file_dialog.file_types.all"), "*.*")
             ]
         )
         
@@ -233,15 +351,15 @@ class MainWindow(ctk.CTk):
             if imported:
                 self._save_data()
                 self._refresh_otp_list()
-                self._show_status(f"成功導入 {len(imported)} 個 OTP")
+                self._show_status(t("status.imported", count=len(imported)))
             else:
-                messagebox.showerror("錯誤", "無法從圖片中讀取 OTP 資訊")
+                messagebox.showerror(t("common.error"), t("error.qr_read_failed"))
     
     def _manual_input(self):
         """手動輸入 OTP"""
         # 創建對話框
         dialog = ctk.CTkToplevel(self)
-        dialog.title("手動新增 OTP")
+        dialog.title(t("dialog.add_otp.title"))
         dialog.geometry("400x350")
         dialog.resizable(False, False)
         dialog.configure(fg_color=theme.colors.bg_primary)
@@ -256,17 +374,17 @@ class MainWindow(ctk.CTk):
                     pady=theme.styles.padding_large)
         
         # 標籤輸入
-        ctk.CTkLabel(content, text="標籤名稱:", **theme.get_label_style()).pack(anchor="w")
+        ctk.CTkLabel(content, text=t("dialog.add_otp.label"), **theme.get_label_style()).pack(anchor="w")
         label_entry = ctk.CTkEntry(content, **theme.get_entry_style())
         label_entry.pack(fill="x", pady=(theme.styles.margin_small, theme.styles.margin_large))
         
         # 密鑰輸入
-        ctk.CTkLabel(content, text="密鑰:", **theme.get_label_style()).pack(anchor="w")
+        ctk.CTkLabel(content, text=t("dialog.add_otp.secret"), **theme.get_label_style()).pack(anchor="w")
         secret_entry = ctk.CTkEntry(content, **theme.get_entry_style())
         secret_entry.pack(fill="x", pady=(theme.styles.margin_small, theme.styles.margin_large))
         
         # 發行者輸入（可選）
-        ctk.CTkLabel(content, text="發行者 (可選):", **theme.get_label_style()).pack(anchor="w")
+        ctk.CTkLabel(content, text=t("dialog.add_otp.issuer"), **theme.get_label_style()).pack(anchor="w")
         issuer_entry = ctk.CTkEntry(content, **theme.get_entry_style())
         issuer_entry.pack(fill="x", pady=(theme.styles.margin_small, theme.styles.margin_large))
         
@@ -281,7 +399,7 @@ class MainWindow(ctk.CTk):
             issuer = issuer_entry.get().strip() or None
             
             if not label or not secret:
-                messagebox.showwarning("輸入錯誤", "請填寫標籤和密鑰", parent=dialog)
+                messagebox.showwarning(t("common.warning"), t("dialog.add_otp.validation.required"), parent=dialog)
                 return
             
             # 創建 OTP 條目
@@ -290,14 +408,14 @@ class MainWindow(ctk.CTk):
             if self.otp_manager.add_entry(entry):
                 self._save_data()
                 self._refresh_otp_list()
-                self._show_status(f"已新增 {label}")
+                self._show_status(t("status.added", label=label))
                 dialog.destroy()
             else:
-                messagebox.showerror("錯誤", "新增失敗，請檢查密鑰是否有效", parent=dialog)
+                messagebox.showerror(t("common.error"), t("dialog.add_otp.validation.invalid_secret"), parent=dialog)
         
         confirm_btn = ctk.CTkButton(
             button_frame,
-            text="確定",
+            text=t("common.ok"),
             command=on_confirm,
             **theme.get_button_style("primary")
         )
@@ -306,7 +424,7 @@ class MainWindow(ctk.CTk):
         # 取消按鈕
         cancel_btn = ctk.CTkButton(
             button_frame,
-            text="取消",
+            text=t("common.cancel"),
             command=dialog.destroy,
             **theme.get_button_style("secondary")
         )
@@ -319,7 +437,7 @@ class MainWindow(ctk.CTk):
         """批量導入"""
         # 選擇導入方式
         dialog = ctk.CTkToplevel(self)
-        dialog.title("批量導入")
+        dialog.title(t("dialog.batch_import.title"))
         dialog.geometry("350x200")
         dialog.resizable(False, False)
         dialog.configure(fg_color=theme.colors.bg_primary)
@@ -335,7 +453,7 @@ class MainWindow(ctk.CTk):
         
         ctk.CTkLabel(
             content,
-            text="選擇導入方式:",
+            text=t("dialog.batch_import.choose_method"),
             **theme.get_label_style()
         ).pack(pady=(0, theme.styles.padding_medium))
         
@@ -343,8 +461,8 @@ class MainWindow(ctk.CTk):
         def import_json():
             dialog.destroy()
             file_path = filedialog.askopenfilename(
-                title="選擇 JSON 檔案",
-                filetypes=[("JSON 檔案", "*.json"), ("所有檔案", "*.*")]
+                title=t("file_dialog.select_json"),
+                filetypes=[(t("file_dialog.file_types.json"), "*.json"), (t("file_dialog.file_types.all"), "*.*")]
             )
             if file_path:
                 manager = self.storage_manager.import_json(file_path)
@@ -358,15 +476,15 @@ class MainWindow(ctk.CTk):
                     if count > 0:
                         self._save_data()
                         self._refresh_otp_list()
-                        self._show_status(f"成功導入 {count} 個 OTP")
+                        self._show_status(t("status.imported", count=count))
                     else:
-                        messagebox.showinfo("提示", "沒有新的 OTP 可導入")
+                        messagebox.showinfo(t("common.info"), t("dialog.batch_import.no_new_items"))
                 else:
-                    messagebox.showerror("錯誤", "無法讀取 JSON 檔案")
+                    messagebox.showerror(t("common.error"), t("error.json_read_failed"))
         
         json_btn = ctk.CTkButton(
             content,
-            text="從 JSON 檔案導入",
+            text=t("dialog.batch_import.from_json"),
             command=import_json,
             **theme.get_button_style("secondary")
         )
@@ -375,7 +493,7 @@ class MainWindow(ctk.CTk):
         # QR Code 目錄按鈕
         def import_qr_dir():
             dialog.destroy()
-            dir_path = filedialog.askdirectory(title="選擇包含 QR Code 的目錄")
+            dir_path = filedialog.askdirectory(title=t("file_dialog.select_qr_dir"))
             if dir_path:
                 results = self.export_import_manager.import_from_qr_directory(
                     self.otp_manager, dir_path
@@ -385,13 +503,13 @@ class MainWindow(ctk.CTk):
                     total = sum(len(labels) for labels in results.values())
                     self._save_data()
                     self._refresh_otp_list()
-                    self._show_status(f"從 {len(results)} 個檔案成功導入 {total} 個 OTP")
+                    self._show_status(t("status.import_from_dir", file_count=len(results), total=total))
                 else:
-                    messagebox.showinfo("提示", "未找到任何 QR Code")
+                    messagebox.showinfo(t("common.info"), t("status.no_qr_found"))
         
         qr_btn = ctk.CTkButton(
             content,
-            text="從 QR Code 目錄導入",
+            text=t("dialog.batch_import.from_qr_dir"),
             command=import_qr_dir,
             **theme.get_button_style("secondary")
         )
@@ -400,12 +518,12 @@ class MainWindow(ctk.CTk):
     def _export_all(self):
         """導出所有 OTP"""
         if not self.otp_manager.entries:
-            messagebox.showinfo("提示", "沒有可導出的 OTP")
+            messagebox.showinfo(t("common.info"), t("dialog.export.no_items"))
             return
         
         # 選擇導出方式
         dialog = ctk.CTkToplevel(self)
-        dialog.title("導出 OTP")
+        dialog.title(t("dialog.export.title"))
         dialog.geometry("350x250")
         dialog.resizable(False, False)
         dialog.configure(fg_color=theme.colors.bg_primary)
@@ -421,7 +539,7 @@ class MainWindow(ctk.CTk):
         
         ctk.CTkLabel(
             content,
-            text="選擇導出格式:",
+            text=t("dialog.export.choose_format"),
             **theme.get_label_style()
         ).pack(pady=(0, theme.styles.padding_medium))
         
@@ -429,19 +547,19 @@ class MainWindow(ctk.CTk):
         def export_json():
             dialog.destroy()
             file_path = filedialog.asksaveasfilename(
-                title="儲存 JSON 檔案",
+                title=t("file_dialog.save_json"),
                 defaultextension=".json",
-                filetypes=[("JSON 檔案", "*.json"), ("所有檔案", "*.*")]
+                filetypes=[(t("file_dialog.file_types.json"), "*.json"), (t("file_dialog.file_types.all"), "*.*")]
             )
             if file_path:
                 if self.storage_manager.export_json(self.otp_manager, file_path):
-                    self._show_status("成功導出為 JSON")
+                    self._show_status(t("status.exported_json"))
                 else:
-                    messagebox.showerror("錯誤", "導出失敗")
+                    messagebox.showerror(t("common.error"), t("error.export_failed"))
         
         json_btn = ctk.CTkButton(
             content,
-            text="導出為 JSON",
+            text=t("dialog.export.json"),
             command=export_json,
             **theme.get_button_style("secondary")
         )
@@ -450,17 +568,17 @@ class MainWindow(ctk.CTk):
         # QR Code 按鈕
         def export_qr():
             dialog.destroy()
-            dir_path = filedialog.askdirectory(title="選擇導出目錄")
+            dir_path = filedialog.askdirectory(title=t("file_dialog.select_export_dir"))
             if dir_path:
                 results = self.export_import_manager.export_to_qr_codes(
                     self.otp_manager, dir_path
                 )
                 success_count = sum(1 for success in results.values() if success)
-                self._show_status(f"成功導出 {success_count} 個 QR Code")
+                self._show_status(t("status.exported_qr", count=success_count))
         
         qr_btn = ctk.CTkButton(
             content,
-            text="導出為 QR Code",
+            text=t("dialog.export.qr"),
             command=export_qr,
             **theme.get_button_style("secondary")
         )
@@ -470,19 +588,19 @@ class MainWindow(ctk.CTk):
         def export_csv():
             dialog.destroy()
             file_path = filedialog.asksaveasfilename(
-                title="儲存 CSV 檔案",
+                title=t("file_dialog.save_csv"),
                 defaultextension=".csv",
-                filetypes=[("CSV 檔案", "*.csv"), ("所有檔案", "*.*")]
+                filetypes=[(t("file_dialog.file_types.csv"), "*.csv"), (t("file_dialog.file_types.all"), "*.*")]
             )
             if file_path:
                 if self.storage_manager.export_csv(self.otp_manager, file_path):
-                    self._show_status("成功導出為 CSV")
+                    self._show_status(t("status.exported_csv"))
                 else:
-                    messagebox.showerror("錯誤", "導出失敗")
+                    messagebox.showerror(t("common.error"), t("error.export_failed"))
         
         csv_btn = ctk.CTkButton(
             content,
-            text="導出為 CSV",
+            text=t("dialog.export.csv"),
             command=export_csv,
             **theme.get_button_style("secondary")
         )
@@ -491,13 +609,13 @@ class MainWindow(ctk.CTk):
     def _create_backup(self):
         """創建備份"""
         if not self.otp_manager.entries:
-            messagebox.showinfo("提示", "沒有可備份的 OTP")
+            messagebox.showinfo(t("common.info"), t("dialog.backup.no_items"))
             return
         
         # 詢問備份名稱
         dialog = ctk.CTkInputDialog(
-            text="輸入備份名稱（可選）:",
-            title="創建備份"
+            text=t("dialog.backup.name_prompt"),
+            title=t("dialog.backup.title")
         )
         backup_name = dialog.get_input()
         
@@ -507,17 +625,17 @@ class MainWindow(ctk.CTk):
             )
             
             if backup_path:
-                self._show_status("備份創建成功")
+                self._show_status(t("status.backup_created"))
                 # 詢問是否開啟備份目錄
-                if messagebox.askyesno("備份成功", "備份創建成功！\n是否開啟備份目錄？"):
+                if messagebox.askyesno(t("common.success"), t("dialog.backup.success")):
                     os.startfile(backup_path)
             else:
-                messagebox.showerror("錯誤", "備份創建失敗")
+                messagebox.showerror(t("common.error"), t("dialog.backup.failed"))
     
     def _show_about(self):
         """顯示關於對話框"""
         dialog = ctk.CTkToplevel(self)
-        dialog.title("關於 Easy OTP")
+        dialog.title(t("dialog.about.title"))
         dialog.geometry("350x250")
         dialog.resizable(False, False)
         dialog.configure(fg_color=theme.colors.bg_primary)
@@ -551,7 +669,7 @@ class MainWindow(ctk.CTk):
         # 版本
         version_label = ctk.CTkLabel(
             content,
-            text="版本 2.0.0",
+            text=t("app.version"),
             font=(theme.fonts.family_primary, theme.fonts.size_normal),
             text_color=theme.colors.text_secondary
         )
@@ -560,7 +678,7 @@ class MainWindow(ctk.CTk):
         # 描述
         desc_label = ctk.CTkLabel(
             content,
-            text="現代化的 OTP 管理器",
+            text=t("app.description"),
             font=(theme.fonts.family_primary, theme.fonts.size_normal),
             text_color=theme.colors.text_secondary
         )
@@ -569,7 +687,7 @@ class MainWindow(ctk.CTk):
         # 關閉按鈕
         close_btn = ctk.CTkButton(
             content,
-            text="關閉",
+            text=t("common.close"),
             command=dialog.destroy,
             **theme.get_button_style("primary")
         )
@@ -597,8 +715,8 @@ class MainWindow(ctk.CTk):
         if not entries:
             if self.search_query:
                 self.empty_state.update_content(
-                    title="找不到符合的 OTP",
-                    description=f"沒有找到包含「{self.search_query}」的條目",
+                    title=t("search.no_results"),
+                    description=t("search.no_results_desc", query=self.search_query),
                     icon="🔍"
                 )
             self.empty_state.pack(fill="both", expand=True)
@@ -629,7 +747,7 @@ class MainWindow(ctk.CTk):
         if otp:
             self.clipboard_clear()
             self.clipboard_append(otp)
-            self._show_status(f"已複製 {otp}")
+            self._show_status(t("status.copied", code=otp))
     
     def _edit_otp(self, label: str):
         """編輯 OTP"""
@@ -639,7 +757,7 @@ class MainWindow(ctk.CTk):
         
         # 創建編輯對話框
         dialog = ctk.CTkToplevel(self)
-        dialog.title("編輯 OTP")
+        dialog.title(t("dialog.edit_otp.title"))
         dialog.geometry("400x350")
         dialog.resizable(False, False)
         dialog.configure(fg_color=theme.colors.bg_primary)
@@ -654,19 +772,19 @@ class MainWindow(ctk.CTk):
                     pady=theme.styles.padding_large)
         
         # 標籤輸入
-        ctk.CTkLabel(content, text="標籤名稱:", **theme.get_label_style()).pack(anchor="w")
+        ctk.CTkLabel(content, text=t("dialog.edit_otp.label"), **theme.get_label_style()).pack(anchor="w")
         label_entry = ctk.CTkEntry(content, **theme.get_entry_style())
         label_entry.insert(0, entry.label)
         label_entry.pack(fill="x", pady=(theme.styles.margin_small, theme.styles.margin_large))
         
         # 密鑰輸入
-        ctk.CTkLabel(content, text="密鑰:", **theme.get_label_style()).pack(anchor="w")
+        ctk.CTkLabel(content, text=t("dialog.edit_otp.secret"), **theme.get_label_style()).pack(anchor="w")
         secret_entry = ctk.CTkEntry(content, **theme.get_entry_style())
         secret_entry.insert(0, entry.secret)
         secret_entry.pack(fill="x", pady=(theme.styles.margin_small, theme.styles.margin_large))
         
         # 發行者輸入
-        ctk.CTkLabel(content, text="發行者 (可選):", **theme.get_label_style()).pack(anchor="w")
+        ctk.CTkLabel(content, text=t("dialog.edit_otp.issuer"), **theme.get_label_style()).pack(anchor="w")
         issuer_entry = ctk.CTkEntry(content, **theme.get_entry_style())
         if entry.issuer:
             issuer_entry.insert(0, entry.issuer)
@@ -683,7 +801,7 @@ class MainWindow(ctk.CTk):
             new_issuer = issuer_entry.get().strip() or None
             
             if not new_label or not new_secret:
-                messagebox.showwarning("輸入錯誤", "請填寫標籤和密鑰", parent=dialog)
+                messagebox.showwarning(t("common.warning"), t("dialog.edit_otp.validation.required"), parent=dialog)
                 return
             
             # 創建新條目
@@ -701,14 +819,14 @@ class MainWindow(ctk.CTk):
             if self.otp_manager.update_entry(label, new_entry):
                 self._save_data()
                 self._refresh_otp_list()
-                self._show_status(f"已更新 {new_label}")
+                self._show_status(t("status.updated", label=new_label))
                 dialog.destroy()
             else:
-                messagebox.showerror("錯誤", "更新失敗", parent=dialog)
+                messagebox.showerror(t("common.error"), t("dialog.edit_otp.validation.update_failed"), parent=dialog)
         
         confirm_btn = ctk.CTkButton(
             button_frame,
-            text="確定",
+            text=t("common.ok"),
             command=on_confirm,
             **theme.get_button_style("primary")
         )
@@ -717,7 +835,7 @@ class MainWindow(ctk.CTk):
         # 取消按鈕
         cancel_btn = ctk.CTkButton(
             button_frame,
-            text="取消",
+            text=t("common.cancel"),
             command=dialog.destroy,
             **theme.get_button_style("secondary")
         )
@@ -728,7 +846,7 @@ class MainWindow(ctk.CTk):
         if self.otp_manager.remove_entry(label):
             self._save_data()
             self._refresh_otp_list()
-            self._show_status(f"已刪除 {label}")
+            self._show_status(t("status.deleted", label=label))
     
     def _update_otp_codes(self):
         """更新所有 OTP 代碼"""
@@ -752,9 +870,9 @@ class MainWindow(ctk.CTk):
         total = len(self.otp_manager.entries)
         if self.search_query:
             shown = len(self.otp_cards)
-            self.count_label.configure(text=f"顯示 {shown} / {total} 個")
+            self.count_label.configure(text=t("count.showing", shown=shown, total=total))
         else:
-            self.count_label.configure(text=f"共 {total} 個")
+            self.count_label.configure(text=t("count.total", count=total))
     
     def _save_data(self):
         """儲存資料"""
@@ -762,43 +880,14 @@ class MainWindow(ctk.CTk):
     
     def _on_closing(self):
         """關閉視窗時的處理"""
+        # 儲存設定
+        self._save_settings()
+        
+        # 儲存 OTP 資料
         self._save_data()
+        
+        # 移除語言觀察者
+        remove_language_observer(self._on_language_changed)
+        
         self.destroy()
     
-    def _setup_drag_drop(self):
-        """設定拖放功能"""
-        try:
-            from tkinterdnd2 import DND_FILES
-            self.drop_target_register(DND_FILES)
-            self.dnd_bind('<<Drop>>', self._on_drop)
-        except ImportError:
-            # 如果沒有安裝 tkinterdnd2，跳過拖放功能
-            pass
-    
-    def _on_drop(self, event):
-        """處理拖放事件"""
-        files = self.tk.splitlist(event.data)
-        
-        for file_path in files:
-            if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-                # 圖片檔案 - 嘗試讀取 QR Code
-                imported = self.export_import_manager.import_from_qr_image(
-                    self.otp_manager, file_path
-                )
-                if imported:
-                    self._save_data()
-                    self._refresh_otp_list()
-                    self._show_status(f"從 {os.path.basename(file_path)} 導入 {len(imported)} 個 OTP")
-            elif file_path.lower().endswith('.json'):
-                # JSON 檔案
-                manager = self.storage_manager.import_json(file_path)
-                if manager:
-                    count = 0
-                    for entry in manager.get_all_entries():
-                        if self.otp_manager.add_entry(entry):
-                            count += 1
-                    
-                    if count > 0:
-                        self._save_data()
-                        self._refresh_otp_list()
-                        self._show_status(f"從 {os.path.basename(file_path)} 導入 {count} 個 OTP")

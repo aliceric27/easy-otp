@@ -98,7 +98,8 @@ class EmptyState(ctk.CTkFrame):
     def update_content(self, 
                       title: Optional[str] = None,
                       description: Optional[str] = None,
-                      icon: Optional[str] = None):
+                      icon: Optional[str] = None,
+                      action_text: Optional[str] = None):
         """
         更新內容
         
@@ -106,6 +107,7 @@ class EmptyState(ctk.CTkFrame):
             title: 新標題
             description: 新描述
             icon: 新圖標
+            action_text: 新操作按鈕文字
         """
         if title is not None:
             self.title = title
@@ -113,6 +115,8 @@ class EmptyState(ctk.CTkFrame):
             self.description = description
         if icon is not None:
             self.icon = icon
+        if action_text is not None:
+            self.action_text = action_text
         
         # 重新創建組件
         for widget in self.winfo_children():

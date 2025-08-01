@@ -5,6 +5,7 @@
 import customtkinter as ctk
 from typing import Optional, Callable
 from src.ui.themes.theme import theme
+from src.utils.i18n import t, add_language_observer, remove_language_observer
 
 
 class SearchBar(ctk.CTkFrame):
@@ -33,13 +34,17 @@ class SearchBar(ctk.CTkFrame):
         
         # 創建組件
         self._create_widgets(placeholder)
+        
+        # 註冊語言變更觀察者
+        self._language_observer = self._on_language_changed
+        add_language_observer(self._language_observer)
     
     def _create_widgets(self, placeholder: str):
         """創建組件"""
         # 搜尋圖標
         self.search_icon = ctk.CTkLabel(
             self,
-            text="搜尋:",
+            text=t("common.search_colon"),
             font=(theme.fonts.family_primary, theme.fonts.size_normal),
             text_color=theme.colors.text_secondary
         )
@@ -119,3 +124,27 @@ class SearchBar(ctk.CTkFrame):
             query: 搜尋查詢
         """
         self.search_var.set(query)
+    
+    def update_placeholder(self, placeholder: str):
+        """
+        更新佔位符文字
+        
+        Args:
+            placeholder: 新的佔位符文字
+        """
+        self.search_entry.configure(placeholder_text=placeholder)
+    
+    def _on_language_changed(self, old_language: str):
+        """語言變更時的處理"""
+        # 更新搜尋圖標文字
+        self.search_icon.configure(text=t("common.search_colon"))
+        # 更新佔位符文字
+        self.update_placeholder(t("search.placeholder"))
+    
+    def destroy(self):
+        """銷毀組件"""
+        # 移除語言觀察者
+        if hasattr(self, '_language_observer'):
+            remove_language_observer(self._language_observer)
+        
+        super().destroy()

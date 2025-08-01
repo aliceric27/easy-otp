@@ -1,0 +1,166 @@
+{
+  "app": {
+    "title": "Easy OTP",
+    "version": "Version 2.1.0",
+    "description": "Modern OTP Manager"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "load": "Load",
+    "import": "Import",
+    "export": "Export",
+    "add": "Add",
+    "remove": "Remove",
+    "search": "Search",
+    "search_colon": "Search:",
+    "clear": "Clear",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copied_mark": "✓ Copied",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info",
+    "success": "Success"
+  },
+  "menu": {
+    "add": {
+      "title": "+ Add",
+      "upload_qr": "Upload QR Code",
+      "manual_input": "Manual Input",
+      "batch_import": "Batch Import"
+    },
+    "more": {
+      "title": "...",
+      "export_all": "Export All",
+      "backup": "Backup",
+      "settings": "Settings",
+      "about": "About"
+    },
+    "language": {
+      "title": "Language",
+      "zh_TW": "繁體中文",
+      "en_US": "English",
+      "display": {
+        "zh_TW": "中",
+        "en_US": "EN"
+      }
+    }
+  },
+  "search": {
+    "placeholder": "Search OTP...",
+    "no_results": "No matching OTP found",
+    "no_results_desc": "No entries found containing \"{query}\""
+  },
+  "empty_state": {
+    "no_otp": {
+      "title": "No OTP entries yet",
+      "description": "Click the \"Add\" button above to get started",
+      "action": "Upload QR Code"
+    }
+  },
+  "dialog": {
+    "add_otp": {
+      "title": "Add OTP Manually",
+      "label": "Label:",
+      "secret": "Secret:",
+      "issuer": "Issuer (Optional):",
+      "validation": {
+        "required": "Please fill in both label and secret",
+        "invalid_secret": "Failed to add. Please check if the secret is valid"
+      }
+    },
+    "edit_otp": {
+      "title": "Edit OTP",
+      "label": "Label:",
+      "secret": "Secret:",
+      "issuer": "Issuer (Optional):",
+      "validation": {
+        "required": "Please fill in both label and secret",
+        "update_failed": "Update failed"
+      }
+    },
+    "delete_otp": {
+      "title": "Confirm Delete",
+      "message": "Are you sure you want to delete '{label}'?\nThis action cannot be undone."
+    },
+    "batch_import": {
+      "title": "Batch Import",
+      "choose_method": "Choose import method:",
+      "from_json": "Import from JSON file",
+      "from_qr_dir": "Import from QR Code directory",
+      "no_new_items": "No new OTP entries to import"
+    },
+    "export": {
+      "title": "Export OTP",
+      "choose_format": "Choose export format:",
+      "json": "Export as JSON",
+      "qr": "Export as QR Code",
+      "csv": "Export as CSV",
+      "no_items": "No OTP entries to export"
+    },
+    "backup": {
+      "title": "Create Backup",
+      "name_prompt": "Enter backup name (optional):",
+      "success": "Backup created successfully!\nOpen backup directory?",
+      "failed": "Failed to create backup",
+      "no_items": "No OTP entries to backup"
+    },
+    "about": {
+      "title": "About Easy OTP"
+    }
+  },
+  "file_dialog": {
+    "select_qr": "Select QR Code Image",
+    "select_json": "Select JSON File",
+    "select_qr_dir": "Select Directory Containing QR Codes",
+    "save_json": "Save JSON File",
+    "save_csv": "Save CSV File",
+    "select_export_dir": "Select Export Directory",
+    "file_types": {
+      "images": "Image Files",
+      "json": "JSON Files",
+      "csv": "CSV Files",
+      "all": "All Files"
+    }
+  },
+  "status": {
+    "imported": "Successfully imported {count} OTP entries",
+    "added": "Added {label}",
+    "updated": "Updated {label}",
+    "deleted": "Deleted {label}",
+    "copied": "Copied {code}",
+    "exported_json": "Successfully exported as JSON",
+    "exported_csv": "Successfully exported as CSV",
+    "exported_qr": "Successfully exported {count} QR codes",
+    "backup_created": "Backup created successfully",
+    "language_changed": "Language changed to {language}",
+    "import_from_file": "Imported {count} OTP entries from {filename}",
+    "import_from_dir": "Successfully imported {total} OTP entries from {file_count} files",
+    "no_qr_found": "No QR codes found"
+  },
+  "error": {
+    "qr_read_failed": "Unable to read OTP information from image",
+    "json_read_failed": "Unable to read JSON file",
+    "export_failed": "Export failed",
+    "save_failed": "Save failed",
+    "load_failed": "Load failed"
+  },
+  "count": {
+    "total": "{count} total",
+    "showing": "Showing {shown} / {total}"
+  },
+  "tooltip": {
+    "copy_otp": "Click to copy OTP code",
+    "edit_otp": "Edit this OTP",
+    "delete_otp": "Delete this OTP",
+    "language_switch": "Switch language"
+  }
+}
