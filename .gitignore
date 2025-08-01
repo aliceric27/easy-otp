@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 應用程式資料
+otp_data.json
+*.db
+*.sqlite
+*.sqlite3
+
+# 測試檔案
+test_*.py
+
+# 臨時檔案
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+# 環境變數
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# 其他
+*.orig
+.claude
+.cache/
