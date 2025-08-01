@@ -57,3 +57,4 @@ test_*.py
 *.orig
 .claude
 .cache/
+CLAUDE.md

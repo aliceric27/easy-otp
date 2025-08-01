@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Easy OTP",
-    "version": "版本 2.1.0",
+    "version": "版本 2.1.1",
     "description": "現代化的 OTP 管理器"
   },
   "common": {
@@ -49,7 +49,7 @@
       "zh_TW": "繁體中文",
       "en_US": "English",
       "display": {
-        "zh_TW": "中",
+        "zh_TW": "中文",
         "en_US": "EN"
       }
     }
@@ -84,7 +84,8 @@
       "issuer": "發行者 (可選):",
       "validation": {
         "required": "請填寫標籤和密鑰",
-        "update_failed": "更新失敗"
+        "update_failed": "更新失敗",
+        "invalid_secret": "金鑰錯誤，請檢查密鑰是否有效"
       }
     },
     "delete_otp": {

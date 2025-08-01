@@ -86,7 +86,7 @@ class MainWindow(ctk.CTk):
             on_search=self._on_search
         )
         self.search_bar.pack(fill="x", padx=theme.styles.padding_medium, 
-                            pady=(0, theme.styles.padding_small))
+                            pady=(theme.styles.padding_medium, theme.styles.padding_small))
         
         # 主要內容區域
         self._create_content_area()
@@ -353,7 +353,7 @@ class MainWindow(ctk.CTk):
                 self._refresh_otp_list()
                 self._show_status(t("status.imported", count=len(imported)))
             else:
-                messagebox.showerror(t("common.error"), t("error.qr_read_failed"))
+                messagebox.showerror(t("common.error"), t("error.qr_read_failed"), parent=self)
     
     def _manual_input(self):
         """手動輸入 OTP"""
@@ -478,9 +478,9 @@ class MainWindow(ctk.CTk):
                         self._refresh_otp_list()
                         self._show_status(t("status.imported", count=count))
                     else:
-                        messagebox.showinfo(t("common.info"), t("dialog.batch_import.no_new_items"))
+                        messagebox.showinfo(t("common.info"), t("dialog.batch_import.no_new_items"), parent=self)
                 else:
-                    messagebox.showerror(t("common.error"), t("error.json_read_failed"))
+                    messagebox.showerror(t("common.error"), t("error.json_read_failed"), parent=self)
         
         json_btn = ctk.CTkButton(
             content,
@@ -505,7 +505,7 @@ class MainWindow(ctk.CTk):
                     self._refresh_otp_list()
                     self._show_status(t("status.import_from_dir", file_count=len(results), total=total))
                 else:
-                    messagebox.showinfo(t("common.info"), t("status.no_qr_found"))
+                    messagebox.showinfo(t("common.info"), t("status.no_qr_found"), parent=self)
         
         qr_btn = ctk.CTkButton(
             content,
@@ -518,7 +518,7 @@ class MainWindow(ctk.CTk):
     def _export_all(self):
         """導出所有 OTP"""
         if not self.otp_manager.entries:
-            messagebox.showinfo(t("common.info"), t("dialog.export.no_items"))
+            messagebox.showinfo(t("common.info"), t("dialog.export.no_items"), parent=self)
             return
         
         # 選擇導出方式
@@ -555,7 +555,7 @@ class MainWindow(ctk.CTk):
                 if self.storage_manager.export_json(self.otp_manager, file_path):
                     self._show_status(t("status.exported_json"))
                 else:
-                    messagebox.showerror(t("common.error"), t("error.export_failed"))
+                    messagebox.showerror(t("common.error"), t("error.export_failed"), parent=self)
         
         json_btn = ctk.CTkButton(
             content,
@@ -596,7 +596,7 @@ class MainWindow(ctk.CTk):
                 if self.storage_manager.export_csv(self.otp_manager, file_path):
                     self._show_status(t("status.exported_csv"))
                 else:
-                    messagebox.showerror(t("common.error"), t("error.export_failed"))
+                    messagebox.showerror(t("common.error"), t("error.export_failed"), parent=self)
         
         csv_btn = ctk.CTkButton(
             content,
@@ -609,7 +609,7 @@ class MainWindow(ctk.CTk):
     def _create_backup(self):
         """創建備份"""
         if not self.otp_manager.entries:
-            messagebox.showinfo(t("common.info"), t("dialog.backup.no_items"))
+            messagebox.showinfo(t("common.info"), t("dialog.backup.no_items"), parent=self)
             return
         
         # 詢問備份名稱
@@ -627,10 +627,10 @@ class MainWindow(ctk.CTk):
             if backup_path:
                 self._show_status(t("status.backup_created"))
                 # 詢問是否開啟備份目錄
-                if messagebox.askyesno(t("common.success"), t("dialog.backup.success")):
+                if messagebox.askyesno(t("common.success"), t("dialog.backup.success"), parent=self):
                     os.startfile(backup_path)
             else:
-                messagebox.showerror(t("common.error"), t("dialog.backup.failed"))
+                messagebox.showerror(t("common.error"), t("dialog.backup.failed"), parent=self)
     
     def _show_about(self):
         """顯示關於對話框"""
@@ -822,7 +822,7 @@ class MainWindow(ctk.CTk):
                 self._show_status(t("status.updated", label=new_label))
                 dialog.destroy()
             else:
-                messagebox.showerror(t("common.error"), t("dialog.edit_otp.validation.update_failed"), parent=dialog)
+                messagebox.showerror(t("common.error"), t("dialog.edit_otp.validation.invalid_secret"), parent=dialog)
         
         confirm_btn = ctk.CTkButton(
             button_frame,

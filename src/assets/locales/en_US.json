@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Easy OTP",
-    "version": "Version 2.1.0",
+    "version": "Version 2.1.1",
     "description": "Modern OTP Manager"
   },
   "common": {
@@ -49,7 +49,7 @@
       "zh_TW": "繁體中文",
       "en_US": "English",
       "display": {
-        "zh_TW": "中",
+        "zh_TW": "中文",
         "en_US": "EN"
       }
     }
@@ -84,7 +84,8 @@
       "issuer": "Issuer (Optional):",
       "validation": {
         "required": "Please fill in both label and secret",
-        "update_failed": "Update failed"
+        "update_failed": "Update failed",
+        "invalid_secret": "Invalid secret key. Please check if the secret is valid"
       }
     },
     "delete_otp": {

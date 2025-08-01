@@ -234,6 +234,16 @@ class OTPCard(ctk.CTkFrame):
         # 延遲開始淡出
         self.after(1000, lambda: fade_step(1.0))
     
+    def _on_language_changed(self, old_language: str):
+        """語言變更時的處理"""
+        # 更新編輯按鈕文字
+        if hasattr(self, 'edit_btn'):
+            self.edit_btn.configure(text=t("common.edit"))
+        
+        # 更新刪除按鈕文字
+        if hasattr(self, 'delete_btn'):
+            self.delete_btn.configure(text=t("common.delete"))
+    
     def update_display(self, otp_code: Optional[str] = None, progress: Optional[float] = None):
         """
         更新顯示
