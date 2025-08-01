@@ -107,7 +107,7 @@ easy-otp/
 
 ## ⚠️ 注意事項
 
-- Windows 用戶可能需要安裝 [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+- Windows 用戶可能需要安裝 [Visual C++ Redistributable](https://learn.microsoft.com/zh-tw/cpp/windows/latest-supported-vc-redist?view=msvc-170)
 - 首次執行可能被防毒軟體誤報，請新增信任
 - 請妥善保管導出的檔案，避免洩露
 
