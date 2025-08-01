@@ -15,6 +15,7 @@ if __name__ == "__main__":
 from src.core.otp_manager import OTPManager, OTPEntry
 from src.core.storage import StorageManager
 from src.utils.qr_handler import QRHandler
+from src.utils.otpauth_migration import otpauth_migration_decoder
 
 
 class ExportImportManager:
@@ -96,23 +97,29 @@ class ExportImportManager:
         qr_contents = self.qr_handler.read_multiple_qr_from_image(image_path)
         
         for content in qr_contents:
+            uris = []
             # 檢查是否為 OTP URI
-            if self.qr_handler.is_valid_otp_uri(content):
-                # 解析 URI
-                entry = otp_manager.parse_uri(content)
-                if entry:
-                    # 檢查是否已存在
-                    if entry.label in otp_manager.entries:
-                        # 生成新標籤
-                        base_label = entry.label
-                        counter = 1
-                        while f"{base_label} ({counter})" in otp_manager.entries:
-                            counter += 1
-                        entry.label = f"{base_label} ({counter})"
-                    
-                    # 新增條目
-                    if otp_manager.add_entry(entry):
-                        imported_labels.append(entry.label)
+            if self.qr_handler.is_valid_google_otp_uri(content):
+                uris = otpauth_migration_decoder.parse_migration_uri(content)
+            elif self.qr_handler.is_valid_otp_uri(content):
+                uris = [content]
+
+            for uri in uris:
+                if self.qr_handler.is_valid_otp_uri(uri):
+                    entry = otp_manager.parse_uri(uri)
+                    if entry:
+                        # 檢查是否已存在
+                        if entry.label in otp_manager.entries:
+                            # 生成新標籤
+                            base_label = entry.label
+                            counter = 1
+                            while f"{base_label} ({counter})" in otp_manager.entries:
+                                counter += 1
+                            entry.label = f"{base_label} ({counter})"
+
+                        # 新增條目
+                        if otp_manager.add_entry(entry):
+                            imported_labels.append(entry.label)
         
         return imported_labels
     
