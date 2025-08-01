@@ -14,7 +14,14 @@ A modern and elegant OTP (One-Time Password) manager with a user-friendly interf
 
 ![demo](demo.png)
 
-## ✨ Features
+- 🔐 **安全本地儲存** - 所有資料儲存在本地，無需網路連接
+- 📷 **QR Code 支援** - 掃描 QR Code 快速導入 OTP
+- 🎨 **現代化界面** - 深色主題，圓角設計，流暢動畫
+- ⏱️ **視覺化倒數** - 圓形進度條顯示剩餘時間
+- 📤 **多格式導出** - 支援 JSON、QR Code、CSV 格式
+- 🔍 **即時搜尋** - 快速找到需要的 OTP
+- 📋 **一鍵複製** - 點擊即可複製 OTP 代碼
+- 🎯 **導入支援** - 支援多格式導入
 
 - 🔐 **Secure Local Storage** - All data stored locally, no internet required
 - 📷 **QR Code Support** - Quick import via QR code scanning
