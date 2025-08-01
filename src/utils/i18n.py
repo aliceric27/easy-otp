@@ -5,6 +5,7 @@
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Dict, Any, List, Callable, Optional
 from threading import Lock
@@ -48,11 +49,15 @@ class LanguageManager:
     
     def _setup_locales_directory(self):
         """設定翻譯檔案目錄"""
-        # 取得專案根目錄
-        current = Path(__file__).parent
-        project_root = current.parent.parent  # src/utils -> src -> project_root
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # 在 PyInstaller bundle 中執行
+            self._locales_dir = Path(sys._MEIPASS) / "assets" / "locales"
+        else:
+            # 從原始碼執行
+            current = Path(__file__).parent
+            project_root = current.parent.parent  # src/utils -> src -> project_root
+            self._locales_dir = project_root / "src" / "assets" / "locales"
         
-        self._locales_dir = project_root / "src" / "assets" / "locales"
         self._locales_dir.mkdir(parents=True, exist_ok=True)
     
     def _validate_language_code(self, code: str) -> bool:
