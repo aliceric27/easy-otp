@@ -100,7 +100,11 @@ class ExportImportManager:
             uris = []
             # 檢查是否為 OTP URI
             if self.qr_handler.is_valid_google_otp_uri(content):
-                uris = otpauth_migration_decoder.parse_migration_uri(content)
+                try:
+                    uris = otpauth_migration_decoder.parse_migration_uri(content)
+                except Exception as e:
+                    print(f"Migration parse error: {type(e).__name__}: {e}")
+                    continue
             elif self.qr_handler.is_valid_otp_uri(content):
                 uris = [content]
 
