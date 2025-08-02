@@ -231,7 +231,14 @@ class QRHandler:
         
         # OTP URI 應該以 otpauth:// 開頭
         return data.startswith('otpauth://totp/') or data.startswith('otpauth://hotp/')
-    
+
+    @staticmethod
+    def is_valid_google_otp_uri(data: str) -> bool:
+        """
+        檢查是否為 Google Authenticator 匯出 QR Code 的 otpauth-migration URI
+        """
+        return data.startswith("otpauth-migration://offline?data=")
+
     @staticmethod
     def extract_otp_info(uri: str) -> Optional[dict]:
         """

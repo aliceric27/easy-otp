@@ -9,3 +9,4 @@ packaging
 # Windows 需要安裝 Visual C++ Redistributable
 # pyzbar 在 Windows 上需要 zbar 庫
 # 注意：Python 3.13 較新，建議使用 Python 3.11 或 3.12
+protobuf==4.25.0
