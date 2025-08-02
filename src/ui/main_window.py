@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox
 from typing import Optional, List, Dict
 import os
 import sys
+from datetime import datetime
 
 # 新增父目錄到路徑
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -324,6 +325,8 @@ class MainWindow(ctk.CTk):
         menu.add_command(label=t("menu.more.export_all"), command=self._export_all)
         menu.add_command(label=t("menu.more.backup"), command=self._create_backup)
         menu.add_separator()
+        menu.add_command(label=t("menu.more.delete_all"), command=self._delete_all_otp)
+        menu.add_separator()
         menu.add_command(label=t("menu.more.about"), command=self._show_about)
         
         # 顯示選單
@@ -546,9 +549,11 @@ class MainWindow(ctk.CTk):
         # JSON 按鈕
         def export_json():
             dialog.destroy()
+            default_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}-OTP.json"
             file_path = filedialog.asksaveasfilename(
                 title=t("file_dialog.save_json"),
                 defaultextension=".json",
+                initialfile=default_filename,
                 filetypes=[(t("file_dialog.file_types.json"), "*.json"), (t("file_dialog.file_types.all"), "*.*")]
             )
             if file_path:
@@ -568,13 +573,27 @@ class MainWindow(ctk.CTk):
         # QR Code 按鈕
         def export_qr():
             dialog.destroy()
-            dir_path = filedialog.askdirectory(title=t("file_dialog.select_export_dir"))
-            if dir_path:
-                results = self.export_import_manager.export_to_qr_codes(
-                    self.otp_manager, dir_path
-                )
-                success_count = sum(1 for success in results.values() if success)
-                self._show_status(t("status.exported_qr", count=success_count))
+            base_dir = filedialog.askdirectory(title=t("file_dialog.select_export_dir"))
+            if base_dir:
+                # 創建帶時間戳的子目錄
+                timestamp_dir = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}-OTP"
+                export_dir = os.path.join(base_dir, timestamp_dir)
+                
+                try:
+                    os.makedirs(export_dir, exist_ok=True)
+                    
+                    results = self.export_import_manager.export_to_qr_codes(
+                        self.otp_manager, export_dir
+                    )
+                    success_count = sum(1 for success in results.values() if success)
+                    
+                    if success_count > 0:
+                        self._show_status(t("status.exported_qr", count=success_count))
+                    else:
+                        messagebox.showerror(t("common.error"), t("error.export_failed"), parent=self)
+                        
+                except Exception as e:
+                    messagebox.showerror(t("common.error"), t("error.export_failed"), parent=self)
         
         qr_btn = ctk.CTkButton(
             content,
@@ -587,9 +606,11 @@ class MainWindow(ctk.CTk):
         # CSV 按鈕
         def export_csv():
             dialog.destroy()
+            default_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}-OTP.csv"
             file_path = filedialog.asksaveasfilename(
                 title=t("file_dialog.save_csv"),
                 defaultextension=".csv",
+                initialfile=default_filename,
                 filetypes=[(t("file_dialog.file_types.csv"), "*.csv"), (t("file_dialog.file_types.all"), "*.*")]
             )
             if file_path:
@@ -877,6 +898,37 @@ class MainWindow(ctk.CTk):
     def _save_data(self):
         """儲存資料"""
         self.storage_manager.save(self.otp_manager)
+    
+    def _delete_all_otp(self):
+        """刪除所有 OTP（需要兩次確認）"""
+        if not self.otp_manager.entries:
+            messagebox.showinfo(t("common.info"), t("dialog.delete_all.no_items"), parent=self)
+            return
+        
+        # 第一次確認
+        count = len(self.otp_manager.entries)
+        first_confirm = messagebox.askyesno(
+            t("dialog.delete_all.title"),
+            t("dialog.delete_all.first_confirm", count=count),
+            parent=self
+        )
+        
+        if not first_confirm:
+            return
+        
+        # 第二次確認
+        second_confirm = messagebox.askyesno(
+            t("dialog.delete_all.title"),
+            t("dialog.delete_all.second_confirm"),
+            parent=self
+        )
+        
+        if second_confirm:
+            # 執行刪除
+            removed_count = self.otp_manager.remove_all_entries()
+            self._save_data()
+            self._refresh_otp_list()
+            self._show_status(t("status.all_deleted", count=removed_count))
     
     def _on_closing(self):
         """關閉視窗時的處理"""

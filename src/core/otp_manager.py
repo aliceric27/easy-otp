@@ -297,3 +297,17 @@ class OTPManager:
                 results.append(entry)
         
         return results
+    
+    def remove_all_entries(self) -> int:
+        """
+        移除所有 OTP 條目
+        
+        Returns:
+            int: 被移除的條目數量
+            
+        Note:
+            呼叫此方法後需要透過 StorageManager 儲存變更
+        """
+        count = len(self.entries)
+        self.entries.clear()
+        return count
